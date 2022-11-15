@@ -19,8 +19,9 @@ lizz add github \
     --fleet=fleet \
     --origin-url=https://github.com/openlizz/application-velero \
     --path=./default \
-    --destination=nginx \
+    --destination=velero \
     --cluster-role \
+    --set-value AWS_ACCESS_KEY_ID=$ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$SECRET_ACCESS_KEY,bucket=$BUCKET,region=$REGION \
     --personal
 ```
 
