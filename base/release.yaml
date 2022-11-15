@@ -1,0 +1,65 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: velero
+  namespace: {{ index . "namespace" }}
+spec:
+  serviceAccountName: {{ index . "serviceAccountName" }}
+  releaseName: velero
+  chart:
+    spec:
+      chart: velero
+      version: "2.32.2"
+      sourceRef:
+        kind: HelmRepository
+        name: vmware-tanzu
+  interval: 30m
+  install:
+    remediation:
+      retries: 3
+  test:
+    enable: false
+  values:
+    initContainers:
+      - name: velero-plugin-for-aws
+        image: velero/velero-plugin-for-aws:v1.5.0
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: /target
+            name: plugins
+    metrics:
+      enabled: false
+    upgradeCRDs: false
+    configuration:
+      provider: aws
+      backupStorageLocation:
+        name: "aws"
+        provider: "velero.io/aws"
+        bucket: {{ index . "bucket" }}
+        default: true
+        {{- if index . "prefix" }}
+        prefix: {{ index . "prefix" }}
+        {{- end }}
+        config:
+          region: {{ index . "region" }}
+          {{- if index . "s3ForcePathStyle" }}
+          s3ForcePathStyle: {{ index . "s3ForcePathStyle" }}
+          {{- end }}
+          {{- if index . "s3Url" }}
+          s3Url: {{ index . "s3Url" }}
+          {{- end }}
+          {{- if index . "publicUrl" }}
+          publicUrl: {{ index . "publicUrl" }}
+          {{- end }}
+    credentials:
+      useSecret: true
+      existingSecret: velero-credentials
+    snapshotsEnabled: false
+    configMaps:
+      restic-restore-action-config:
+        labels:
+          velero.io/plugin-config: ""
+          velero.io/restic: RestoreItemAction
+        data:
+          image: gcr.io/heptio-images/velero-restic-restore-helper:v1.1.0
+    deployRestic: true

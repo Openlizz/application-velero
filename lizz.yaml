@@ -1,0 +1,19 @@
+name: velero
+values:
+  userValues:
+    - name: AWS_ACCESS_KEY_ID
+      required: true
+    - name: AWS_SECRET_ACCESS_KEY
+      required: true
+    - name: bucket
+      required: true
+    - name: prefix
+    - name: region
+      required: true
+    - name: s3ForcePathStyle
+    - name: s3Url
+    - name: publicUrl
+encryption:
+  enabled: true
+  inputPaths:
+    - base/secret.yaml
